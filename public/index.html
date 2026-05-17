@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GTA Family | Заявка в семью</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 40px;
+    }
+
+    .card {
+      background: rgba(20, 20, 40, 0.75);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
+      padding: 30px 35px;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease;
+      color: white;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff, #b794f4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #ddd;
+      margin-bottom: 25px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .input-group {
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      color: #ddd;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      color: white;
+      font-size: 15px;
+      transition: 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #b794f4;
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 8px rgba(183, 148, 244, 0.4);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .help-text {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 5px;
+    }
+
+    .paste-hint {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .file-list {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .file-item {
+      background: rgba(183, 148, 244, 0.2);
+      border-radius: 12px;
+      padding: 6px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #c4b5fd;
+    }
+
+    .remove-file {
+      cursor: pointer;
+      color: #f87171;
+      font-weight: bold;
+      background: none;
+      border: none;
+      width: auto;
+      padding: 0 4px;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .remove-file:hover {
+      color: #ef4444;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(95deg, #7c3aed, #a78bfa);
+      border: none;
+      border-radius: 28px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 10px;
+      box-shadow: 0 8px 14px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.02);
+      filter: brightness(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #msg {
+      margin-top: 20px;
+      text-align: center;
+      padding: 10px;
+      border-radius: 16px;
+      font-size: 14px;
+    }
+    .success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; }
+    .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fecaca; }
+
+    .footer-text {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>🏆 Pehota famq</h2>
+  <div class="subtitle">Стань частью команды</div>
+
+  <div class="input-group">
+    <input type="text" id="name" placeholder="Имя Фамилия | Статик">
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="ooc" placeholder="ООС имя (реальное)">
+  </div>
+
+  <div class="input-group">
+    <select id="pref">
+      <option>🔥 Крайм</option>
+      <option>⚡ Гос</option>
+    </select>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="families" placeholder="В каких семьях были?">
+  </div>
+
+  <div class="input-group">
+    <label>📸 Вставьте скриншот всех ваших персонажей:</label>
+    <textarea id="screenshotsInput" placeholder="Вставьте ссылку (Imgur, Google Drive и т.д.) или используйте Ctrl+V для загрузки изображений..."></textarea>
+    <div class="paste-hint">💡 Подсказка: нажмите Ctrl+V чтобы вставить изображение из буфера обмена</div>
+    <div class="file-list" id="fileList"></div>
+  </div>
+
+  <div class="input-group">
+    <label>🆔 Discord ID (цифры):</label>
+    <input type="text" id="discordId" placeholder="123456789012345678">
+    <div class="help-text">Как получить ID: Настройки Discord → Дополнительно → Режим разработчика → ПКМ по себе → Копировать ID</div>
+  </div>
+
+  <button id="sendBtn">🚀 Отправить заявку</button>
+  <div id="msg"></div>
+
+  <div class="footer-text">ПЕХОТА</div>
+</div>
+
+<!-- Фоновая музыка - пение птиц 40% (постоянно, без кнопки) -->
+<audio id="bgMusic" loop autoplay preload="auto">
+  <source src="birds.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  // Музыка на постоянной основе 40%
+  const music = document.getElementById('bgMusic');
+  music.volume = 0.4; // 40% громкости
+  music.loop = true;
+  
+  // Пытаемся запустить музыку (браузер может заблокировать)
+  music.play().catch(e => {
+    console.log('Автовоспроизведение заблокировано, запускаем по клику');
+    // Запускаем музыку при первом клике по странице
+    document.body.addEventListener('click', () => {
+      music.play();
+    }, { once: true });
+  });
+
+  // Логика отправки заявки
+  const sendBtn = document.getElementById('sendBtn');
+  const msgDiv = document.getElementById('msg');
+  const screenshotsInput = document.getElementById('screenshotsInput');
+  const fileList = document.getElementById('fileList');
+  let uploadedFiles = [];
+
+  document.addEventListener('paste', (e) => {
+    const items = Array.from(e.clipboardData.items);
+    const imageFiles = [];
+    
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          const ext = file.type.split('/')[1] || 'png';
+          const renamedFile = new File([file], `screenshot-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`, { type: file.type });
+          imageFiles.push(renamedFile);
+        }
+      }
+    }
+    
+    if (imageFiles.length > 0) {
+      e.preventDefault();
+      addFiles(imageFiles);
+      showMessage(`✅ Вставлено ${imageFiles.length} изображение(й) через Ctrl+V`, "success");
+    }
+  });
+
+  function addFiles(files) {
+    let newFiles = [...uploadedFiles, ...files];
+    if (newFiles.length > 5) {
+      showMessage("⚠️ Можно загрузить не более 5 скриншотов", "error");
+      newFiles = newFiles.slice(0, 5);
+    }
+    uploadedFiles = newFiles;
+    updateFileList();
+  }
+
+  function updateFileList() {
+    fileList.innerHTML = '';
+    if (uploadedFiles.length === 0) return;
+    
+    uploadedFiles.forEach((file, index) => {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      fileItem.innerHTML = `
+        📷 ${file.name.length > 25 ? file.name.substring(0, 22) + '...' : file.name}
+        <button class="remove-file" data-index="${index}">✕</button>
+      `;
+      fileList.appendChild(fileItem);
+    });
+
+    document.querySelectorAll('.remove-file').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt(btn.dataset.index);
+        uploadedFiles.splice(index, 1);
+        updateFileList();
+        e.stopPropagation();
+      });
+    });
+  }
+
+  async function send() {
+    const name = document.getElementById("name").value;
+    const discordId = document.getElementById("discordId").value;
+    const screenshotsLink = screenshotsInput.value;
+
+    if (!name || !discordId) {
+      showMessage("❌ Заполните имя и Discord ID!", "error");
+      return;
+    }
+
+    if (!/^\d+$/.test(discordId)) {
+      showMessage("❌ Discord ID должен содержать только цифры!", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("ooc", document.getElementById("ooc").value);
+    formData.append("pref", document.getElementById("pref").value);
+    formData.append("families", document.getElementById("families").value);
+    formData.append("discordId", discordId);
+    formData.append("charsLink", screenshotsLink);
+    
+    uploadedFiles.forEach(file => {
+      formData.append("screenshots", file);
+    });
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = "⏳ Отправка...";
+
+    try {
+      const res = await fetch("/api/apply", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        showMessage("✅ Заявка отправлена! Ожидайте ответа в Discord.", "success");
+        document.getElementById("name").value = "";
+        document.getElementById("ooc").value = "";
+        document.getElementById("families").value = "";
+        document.getElementById("discordId").value = "";
+        screenshotsInput.value = "";
+        uploadedFiles = [];
+        updateFileList();
+      } else {
+        showMessage(result.error || "❌ Ошибка отправки. Попробуйте позже.", "error");
+      }
+    } catch (err) {
+      showMessage("❌ Ошибка сети. Проверьте подключение.", "error");
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "🚀 Отправить заявку";
+    }
+  }
+
+  function showMessage(text, type) {
+    msgDiv.textContent = text;
+    msgDiv.className = type;
+    setTimeout(() => {
+      msgDiv.className = "";
+      msgDiv.textContent = "";
+    }, 5000);
+  }
+
+  sendBtn.addEventListener("click", send);
+</script>
+</body>
+</html>
