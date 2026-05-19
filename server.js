@@ -2,8 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags } = require("discord.js");
 
 const app = express();
@@ -17,29 +15,15 @@ const CHANNEL_ID = process.env.CHANNEL_ID;
 const RESPONSE_CHANNEL_ID = process.env.RESPONSE_CHANNEL_ID;
 const NOTIFICATION_ROLE_ID = process.env.NOTIFICATION_ROLE_ID;
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
-});
-
+// Используем memoryStorage - файлы не сохраняются на диск
 const upload = multer({ 
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    if (mimetype && extname) {
-      return cb(null, true);
+    if (mimetype) {
+      cb(null, true);
     } else {
       cb(new Error("Только изображения!"));
     }
@@ -82,8 +66,7 @@ bot.on("interactionCreate", async (interaction) => {
     const nameField = embed.fields.find(f => f.name === "Имя | Статик");
     const playerName = nameField ? nameField.value : "Игрок";
     
-    const userDiscordId = discordId;
-    const userMention = userDiscordId && userDiscordId !== "—" ? `<@${userDiscordId}>` : "игрок";
+    const userMention = discordId && discordId !== "—" ? `<@${discordId}>` : "игрок";
 
     if (RESPONSE_CHANNEL_ID) {
       try {
@@ -159,25 +142,6 @@ bot.login(BOT_TOKEN);
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-app.use("/uploads", express.static("uploads"));
-
-setInterval(() => {
-  const uploadDir = path.join(__dirname, "uploads");
-  if (!fs.existsSync(uploadDir)) return;
-  fs.readdir(uploadDir, (err, files) => {
-    if (err) return;
-    const now = Date.now();
-    files.forEach(file => {
-      const filePath = path.join(uploadDir, file);
-      fs.stat(filePath, (err, stats) => {
-        if (err) return;
-        if (now - stats.mtimeMs > 3600000) {
-          fs.unlink(filePath, () => {});
-        }
-      });
-    });
-  });
-}, 3600000);
 
 app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
   try {
@@ -188,17 +152,14 @@ app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
     console.log("📸 Файлов загружено:", files.length);
 
     if (!botReady) {
-      files.forEach(f => fs.unlink(f.path, () => {}));
       return res.status(500).json({ success: false, error: "Бот не готов" });
     }
 
     if (!name || !discordId) {
-      files.forEach(f => fs.unlink(f.path, () => {}));
       return res.status(400).json({ success: false, error: "Заполните имя и Discord ID!" });
     }
 
     if (!/^\d+$/.test(discordId)) {
-      files.forEach(f => fs.unlink(f.path, () => {}));
       return res.status(400).json({ success: false, error: "Discord ID должен содержать только цифры!" });
     }
 
@@ -212,8 +173,7 @@ app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
       { name: "Discord", value: userMention, inline: false }
     ];
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    
+    // Добавляем ссылку, если есть
     if (charsLink && charsLink.trim()) {
       embedFields.push({
         name: "📎 Ссылка на скриншоты",
@@ -222,14 +182,7 @@ app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
       });
     }
     
-    if (files.length > 0) {
-      embedFields.push({
-        name: `📸 Загруженные скриншоты (${files.length})`,
-        value: files.map((f, i) => `[Изображение ${i + 1}](${baseUrl}/uploads/${f.filename})`).join("\n"),
-        inline: false
-      });
-    }
-    
+    // Если нет ни ссылки, ни файлов
     if ((!charsLink || !charsLink.trim()) && files.length === 0) {
       embedFields.push({ name: "📸 Скриншоты", value: "❌ Не предоставлены", inline: false });
     }
@@ -257,19 +210,29 @@ app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
     const guild = await bot.guilds.fetch(GUILD_ID);
     const channel = await guild.channels.fetch(CHANNEL_ID);
 
+    // Подготавливаем файлы для отправки в Discord
+    const attachments = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const extension = file.mimetype.split('/')[1];
+      attachments.push({
+        attachment: file.buffer,
+        name: `screenshot_${i + 1}_${Date.now()}.${extension}`
+      });
+    }
+
+    // Отправляем сообщение с вложениями
     await channel.send({
       content: `<@&${ROLE_1_ID}> <@&${ROLE_2_ID}> 📩 **НОВАЯ ЗАЯВКА!**\n👤 Отправитель: ${userMention}`,
       embeds: [embed],
-      components: [row]
+      components: [row],
+      files: attachments  // ← Файлы летят напрямую в Discord!
     });
 
     res.json({ success: true, message: "Заявка отправлена!" });
 
   } catch (err) {
     console.log("❌ ОШИБКА:", err);
-    if (req.files) {
-      req.files.forEach(f => fs.unlink(f.path, () => {}));
-    }
     res.status(500).json({ success: false, error: err.message });
   }
 });
