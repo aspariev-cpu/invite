@@ -188,7 +188,7 @@ app.post("/api/apply", upload.array("screenshots", 5), async (req, res) => {
     }
 
     const embed = {
-      title: "📝 Новая заявка в семью ПЕХОТА",
+      title: "📝 Новая заявка в семью Family",
       color: 7506394,
       fields: embedFields,
       footer: { text: "Нажмите кнопку для рассмотрения" },
